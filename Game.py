@@ -52,6 +52,8 @@ def load_scores():
 
 class UltimateTicTacToe:
     def __init__(self):
+        self.cursor_visible = True
+        self.cursor_timer = 0
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Ultimate Tic-Tac-Toe")
         self.state = MENU
@@ -80,25 +82,21 @@ class UltimateTicTacToe:
     def draw_menu(self):
         self.screen.fill(BLACK)
 
-        # Tytuł gry
         title = FONT.render("Ultimate Tic Tac Toe", True, (200, 0, 200))
         self.screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 150))
 
-        # Przycisk START
         start_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 25, 200, 50)
         pygame.draw.rect(self.screen, (128, 0, 128), start_button, border_radius=10)
         text = FONT.render("Start", True, WHITE)
         text_rect = text.get_rect(center=start_button.center)
         self.screen.blit(text, text_rect)
 
-        # Najlepszy wynik – Single
         single_score = self.best_scores['1']
         score_text = SMALL_FONT.render(
             f"Best Single Game: {single_score['score'] if single_score['score'] != float('inf') else 'N/A'} moves by {single_score['player']}",
             True, WHITE)
         self.screen.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, HEIGHT // 2 + 60))
 
-        # Najlepszy wynik – Best of 3
         best3_score = self.best_scores['3']
         score_text = SMALL_FONT.render(
             f"Best of 3: {best3_score['score'] if best3_score['score'] != float('inf') else 'N/A'} moves by {best3_score['player']}",
@@ -108,18 +106,15 @@ class UltimateTicTacToe:
     def draw_game_type(self):
         self.screen.fill(BLACK)
 
-        # Tytuł
         title = FONT.render("Choose Game Mode", True, (200, 0, 200))
         self.screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 130))
 
-        # Przycisk: Single Game
         single_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 60, 200, 50)
         pygame.draw.rect(self.screen, (128, 0, 128), single_button, border_radius=10)
         text_single = FONT.render("Single Game", True, WHITE)
         text_rect = text_single.get_rect(center=single_button.center)
         self.screen.blit(text_single, text_rect)
 
-        # Przycisk: Best of 3
         best3_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 10, 200, 50)
         pygame.draw.rect(self.screen, (128, 0, 128), best3_button, border_radius=10)
         text_best3 = FONT.render("Best of 3", True, WHITE)
@@ -129,32 +124,27 @@ class UltimateTicTacToe:
     def draw_nickname(self):
         self.screen.fill(BLACK)
 
-        # Tytuł
         title = FONT.render("Enter Player Nickname", True, (200, 0, 200))
         self.screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 130))
 
-        # Tekst informacyjny
         prompt = f"Player {self.name_index + 1} ({'O' if self.name_index == 0 else 'X'}) Nickname (max 10 chars):"
         prompt_text = SMALL_FONT.render(prompt, True, WHITE)
         self.screen.blit(prompt_text, (WIDTH // 2 - prompt_text.get_width() // 2, HEIGHT // 2 - 60))
 
-        # Fioletowa ramka pola tekstowego
         input_box = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2, 200, 40)
         pygame.draw.rect(self.screen, (128, 0, 128), input_box, border_radius=10)
 
-        # Wpisywany tekst
         name_text = FONT.render(self.current_name, True, WHITE)
         self.screen.blit(name_text, (WIDTH // 2 - name_text.get_width() // 2, HEIGHT // 2 + 5))
 
     def draw_board(self):
-        self.screen.fill(WHITE)
+        self.screen.fill(BLACK)
         for big_row in range(3):
             for big_col in range(3):
                 board_idx = big_row * 3 + big_col
                 x_offset = BOARD_OFFSET + big_col * (SMALL_BOARD_SIZE + 10)
                 y_offset = BOARD_OFFSET + big_row * (SMALL_BOARD_SIZE + 10)
 
-                # Wymaga dopracowania w przypadku dost ępności więcej niż jenej planszy
                 if self.active_board == (big_row, big_col):
                     pygame.draw.rect(self.screen, (200, 200, 255),
                                      (x_offset - 5, y_offset - 5, SMALL_BOARD_SIZE + 10, SMALL_BOARD_SIZE + 10))
@@ -163,7 +153,7 @@ class UltimateTicTacToe:
                     for col in range(3):
                         x = x_offset + col * CELL_SIZE
                         y = y_offset + row * CELL_SIZE
-                        pygame.draw.rect(self.screen, BLACK, (x, y, CELL_SIZE, CELL_SIZE), 1)
+                        pygame.draw.rect(self.screen, WHITE, (x, y, CELL_SIZE, CELL_SIZE), 1)
                         if self.boards[board_idx][row][col] == 1:
                             pygame.draw.circle(self.screen, BLUE,
                                                (x + CELL_SIZE // 2, y + CELL_SIZE // 2), CELL_SIZE // 3)
@@ -186,18 +176,19 @@ class UltimateTicTacToe:
                                      (x_offset + SMALL_BOARD_SIZE - 20, y_offset + 20), 5)
 
         status = f"{self.player_names[self.current_player - 1]}'s turn ({'X' if self.current_player == 2 else 'O'})"
-        text = FONT.render(status, True, BLACK)
+        text = FONT.render(status, True, WHITE )
         self.screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 10))
 
     def draw_game_over(self):
-        self.screen.fill(WHITE)
+        self.screen.fill(BLACK)
         if self.winner:
-            text = FONT.render(f"{self.player_names[self.winner - 1]} wins in {self.move_count} moves!", True, BLACK)
+            text = FONT.render(f"{self.player_names[self.winner - 1]} wins in {self.move_count} moves!", True, WHITE)
         else:
-            text = FONT.render("It's a draw!", True, BLACK)
+            text = FONT.render("It's a draw!", True, WHITE)
         self.screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - 20))
+
         restart_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 20, 200, 50)
-        pygame.draw.rect(self.screen, BLUE, restart_button)
+        pygame.draw.rect(self.screen, (128, 0, 128), restart_button, border_radius=10)
         text = FONT.render("Back to Menu", True, WHITE)
         self.screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 + 35))
 
