@@ -78,45 +78,73 @@ class UltimateTicTacToe:
         self.winner = None
 
     def draw_menu(self):
-        self.screen.fill(WHITE)
-        start_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 25, 200, 50)
-        pygame.draw.rect(self.screen, BLUE, start_button)
+        self.screen.fill(BLACK)
 
+        # Tytuł gry
+        title = FONT.render("Ultimate Tic Tac Toe", True, (200, 0, 200))
+        self.screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 150))
+
+        # Przycisk START
+        start_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 25, 200, 50)
+        pygame.draw.rect(self.screen, (128, 0, 128), start_button, border_radius=10)
         text = FONT.render("Start", True, WHITE)
         text_rect = text.get_rect(center=start_button.center)
         self.screen.blit(text, text_rect)
 
+        # Najlepszy wynik – Single
         single_score = self.best_scores['1']
         score_text = SMALL_FONT.render(
             f"Best Single Game: {single_score['score'] if single_score['score'] != float('inf') else 'N/A'} moves by {single_score['player']}",
-            True, BLACK)
+            True, WHITE)
         self.screen.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, HEIGHT // 2 + 60))
 
+        # Najlepszy wynik – Best of 3
         best3_score = self.best_scores['3']
         score_text = SMALL_FONT.render(
             f"Best of 3: {best3_score['score'] if best3_score['score'] != float('inf') else 'N/A'} moves by {best3_score['player']}",
-            True, BLACK)
+            True, WHITE)
         self.screen.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, HEIGHT // 2 + 90))
 
     def draw_game_type(self):
-        self.screen.fill(WHITE)
+        self.screen.fill(BLACK)
+
+        # Tytuł
+        title = FONT.render("Choose Game Mode", True, (200, 0, 200))
+        self.screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 130))
+
+        # Przycisk: Single Game
         single_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 60, 200, 50)
-        best3_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2, 200, 50)
-        pygame.draw.rect(self.screen, BLUE, single_button)
-        pygame.draw.rect(self.screen, BLUE, best3_button)
-        text = FONT.render("Single Game", True, WHITE)
-        self.screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - 40))
-        text = FONT.render("Best of 3", True, WHITE)
-        self.screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 + 20))
+        pygame.draw.rect(self.screen, (128, 0, 128), single_button, border_radius=10)
+        text_single = FONT.render("Single Game", True, WHITE)
+        text_rect = text_single.get_rect(center=single_button.center)
+        self.screen.blit(text_single, text_rect)
+
+        # Przycisk: Best of 3
+        best3_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 10, 200, 50)
+        pygame.draw.rect(self.screen, (128, 0, 128), best3_button, border_radius=10)
+        text_best3 = FONT.render("Best of 3", True, WHITE)
+        text_rect = text_best3.get_rect(center=best3_button.center)
+        self.screen.blit(text_best3, text_rect)
 
     def draw_nickname(self):
-        self.screen.fill(WHITE)
+        self.screen.fill(BLACK)
+
+        # Tytuł
+        title = FONT.render("Enter Player Nickname", True, (200, 0, 200))
+        self.screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 130))
+
+        # Tekst informacyjny
         prompt = f"Player {self.name_index + 1} ({'O' if self.name_index == 0 else 'X'}) Nickname (max 10 chars):"
-        text = FONT.render(prompt, True, BLACK)
-        self.screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - 50))
-        name_text = FONT.render(self.current_name, True, BLACK)
-        pygame.draw.rect(self.screen, GRAY, (WIDTH // 2 - 100, HEIGHT // 2, 200, 40))
-        self.screen.blit(name_text, (WIDTH // 2 - name_text.get_width() // 2, HEIGHT // 2 + 10))
+        prompt_text = SMALL_FONT.render(prompt, True, WHITE)
+        self.screen.blit(prompt_text, (WIDTH // 2 - prompt_text.get_width() // 2, HEIGHT // 2 - 60))
+
+        # Fioletowa ramka pola tekstowego
+        input_box = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2, 200, 40)
+        pygame.draw.rect(self.screen, (128, 0, 128), input_box, border_radius=10)
+
+        # Wpisywany tekst
+        name_text = FONT.render(self.current_name, True, WHITE)
+        self.screen.blit(name_text, (WIDTH // 2 - name_text.get_width() // 2, HEIGHT // 2 + 5))
 
     def draw_board(self):
         self.screen.fill(WHITE)
