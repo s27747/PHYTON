@@ -1,6 +1,5 @@
 import pygame
 import sqlite3
-import os
 
 pygame.init()
 
