@@ -1,5 +1,5 @@
 import pygame
-import json
+import sqlite3
 import os
 
 pygame.init()
@@ -24,16 +24,37 @@ NICKNAME = 2
 PLAYING = 3
 GAME_OVER = 4
 
-SCORE_FILE = 'scores.json'
+DB_FILE = 'bestScores.db'
 
 
-def save_scores(scores):
+def init_database():
     try:
-        with open(SCORE_FILE, 'w') as f:
-            json.dump(scores, f, indent=4)
-    except IOError as e:
-        print(f"Error saving scores: {e}")
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS scores (
+                    game_type TEXT PRIMARY KEY,
+                    player TEXT NOT NULL,
+                    score INTEGER NOT NULL
+                )
+            ''')
+            cursor.execute('INSERT OR IGNORE INTO scores (game_type, player, score) VALUES (?, ?, ?)', ('1', 'N/A', float('inf')))
+            cursor.execute('INSERT OR IGNORE INTO scores (game_type, player, score) VALUES (?, ?, ?)', ('3', 'N/A', float('inf')))
+            conn.commit()
+    except sqlite3.Error as e:
+        print(f"Error initializing database: {e}")
 
+def save_score(game_type, player, score):
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT OR REPLACE INTO scores (game_type, player, score)
+                VALUES (?, ?, ?)
+            ''', (str(game_type), player, score))
+            conn.commit()
+    except sqlite3.Error as e:
+        print(f"Error saving score: {e}")
 
 def load_scores():
     default_scores = {
@@ -41,11 +62,15 @@ def load_scores():
         '3': {'player': 'N/A', 'score': float('inf')}
     }
     try:
-        if os.path.exists(SCORE_FILE):
-            with open(SCORE_FILE, 'r') as f:
-                return json.load(f)
-        return default_scores
-    except (IOError, json.JSONDecodeError) as e:
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT game_type, player, score FROM scores')
+            rows = cursor.fetchall()
+            scores = default_scores.copy()
+            for row in rows:
+                scores[row[0]] = {'player': row[1], 'score': row[2]}
+            return scores
+    except sqlite3.Error as e:
         print(f"Error loading scores: {e}")
         return default_scores
 
@@ -65,6 +90,7 @@ class UltimateTicTacToe:
         self.player_names = ["", ""]
         self.current_name = ""
         self.name_index = 0
+        init_database()
         self.best_scores = load_scores()
         self.games_played = 0
         self.winner = None
@@ -240,7 +266,7 @@ class UltimateTicTacToe:
                     'player': self.player_names[self.winner - 1],
                     'score': self.move_count
                 }
-                save_scores(self.best_scores)
+                save_score(self.game_type, self.player_names[self.winner - 1], self.move_count)
 
     def handle_click(self, pos):
         if self.state == MENU:
